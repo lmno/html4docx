@@ -25,12 +25,13 @@ class HtmlToDocx(HTMLParser):
         Class to convert HTML to Docx
         source: https://docs.python.org/3/library/html.parser.html
     """
-    def __init__(self):
+    def __init__(self, pat: str):
         super().__init__()
         self.options = dict(constants.DEFAULT_OPTIONS)
         self.table_row_selectors = constants.DEFAULT_TABLE_ROW_SELECTORS
         self.table_style = constants.DEFAULT_TABLE_STYLE
         self.paragraph_span_styles = {}  # paragraph_id -> set(run_indices)
+        self.pat = pat
 
     def set_initial_attrs(self, document = None):
         self.tags = {
@@ -1031,7 +1032,7 @@ class HtmlToDocx(HTMLParser):
         width = utils.unit_converter(current_attrs['width']) if 'width' in current_attrs else None
 
         # fetch image
-        image = utils.fetch_image_data(src)
+        image = utils.fetch_image_data(src, self.pat)
 
         if not self.paragraph:
             self.paragraph = self.doc.add_paragraph()

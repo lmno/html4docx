@@ -44,7 +44,7 @@ def adapt_font_size(size: str):
 def remove_important_from_style(text: str):
     return re.sub('!important', '', text, flags=re.IGNORECASE).strip()
 
-def fetch_image(url: str):
+def fetch_image(url: str, pat: str):
     """
     Attempts to fetch an image from a url, with 5s timeout.
     If successful returns a bytes object, else returns None
@@ -52,19 +52,22 @@ def fetch_image(url: str):
     :return:
     """
     try:
-        with urllib.request.urlopen(url, timeout=5) as response:
+        req = urllib.request.Request(url)
+        creds = base64.b64encode(f":{pat}".encode()).decode()
+        req.add_header("Authorization", f"Basic {creds}")
+        with urllib.request.urlopen(req, timeout=5,) as response:
             return BytesIO(response.read())
     except urllib.error.URLError:
         return None
 
-def fetch_image_data(src: str):
+def fetch_image_data(src: str, pat: str):
     """Fetches image data from a URL or local file."""
     if src.startswith("data:image/"):  # Handle Base64
         _, encoded = src.split(",", 1)
         return BytesIO(base64.b64decode(encoded))
 
     elif is_url(src):  # Handle URLs
-        return fetch_image(src)
+        return fetch_image(src, pat)
 
     else:  # Handle Local Files
         try:
